@@ -12,9 +12,10 @@ interface PortfolioTableProps {
     stocks?: Stock[];
   };
   refresh: () => void;
+  onDelete: () => void;
 }
 
-export default function PortfolioTable({ portfolio, refresh }: PortfolioTableProps) {
+export default function PortfolioTable({ portfolio, refresh, onDelete }: PortfolioTableProps) {
   const [openName, setOpenName] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [shares, setShares] = useState("");
@@ -79,7 +80,12 @@ export default function PortfolioTable({ portfolio, refresh }: PortfolioTablePro
 
   return (
     <div className="w-full max-w-5xl mx-auto mt-10">
-      <h2 className="text-2xl font-bold mb-4 tracking-wide">{portfolio.name}</h2>
+      <div className="flex items-center gap-3 mb-4">
+        <h2 className="text-2xl font-bold tracking-wide">{portfolio.name}</h2>
+        <button onClick={onDelete} className="hover:scale-110 cursor-pointer text-gray-400 hover:text-red-500" title="Delete portfolio">
+          <Trash2 className="w-5 h-5" />
+        </button>
+      </div>
 
       <table className="w-full table-fixed text-sm border-collapse shadow-lg">
         <thead className="bg-[#e9ecf1] text-left uppercase text-xs tracking-wider font-bold">

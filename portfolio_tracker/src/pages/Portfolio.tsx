@@ -80,6 +80,13 @@ export default function Portfolio() {
     fetchPortfolios();
   }, []);
 
+  const deletePortfolio = async (id: number) => {
+    if (!confirm("Delete this portfolio and all its stocks?")) return;
+    await supabase.from("stocks").delete().eq("portfolio_id", id);
+    await supabase.from("portfolios").delete().eq("id", id);
+    fetchPortfolios();
+  };
+
   const createPortfolio = async () => {
     const name = prompt("Enter a name for your new portfolio:");
     if (!name) return;
@@ -118,6 +125,7 @@ export default function Portfolio() {
           key={p.id}
           portfolio={p}
           refresh={fetchPortfolios}
+          onDelete={() => deletePortfolio(p.id)}
         />
       ))}
     </div>
