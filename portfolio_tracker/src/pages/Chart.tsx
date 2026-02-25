@@ -120,6 +120,20 @@ export default function Charts() {
     }
   }, [selectedTicker]);
 
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  const formatXAxisTick = (value: string): string => {
+    if (period === "1d") return value; // already a time string
+    const parts = value.split("-");
+    const mon = MONTHS[parseInt(parts[1] ?? "1") - 1];
+    const day = parseInt(parts[2] ?? "1");
+    const yr = (parts[0] ?? "").slice(2);
+    if (period === "1m" || period === "6m") return `${mon} ${day}`;
+    return `${mon} '${yr}`;
+  };
+
+  const xAxisInterval = Math.max(1, Math.floor(chartData.length / 6));
+
   const minClose = chartData.length ? Math.min(...chartData.map((d) => d.close)) : 0;
   const maxClose = chartData.length ? Math.max(...chartData.map((d) => d.close)) : 0;
   const padding = (maxClose - minClose) * 0.1 || 1;
@@ -213,7 +227,8 @@ export default function Charts() {
                 dataKey="date"
                 tick={{ fontSize: 11 }}
                 tickLine={false}
-                interval="preserveStartEnd"
+                interval={xAxisInterval}
+                tickFormatter={formatXAxisTick}
               />
               <YAxis
                 domain={[minClose - padding, maxClose + padding]}
