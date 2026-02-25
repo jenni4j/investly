@@ -133,7 +133,7 @@ export default function Charts() {
                 width={60}
               />
               <Tooltip
-                formatter={(value: number) => [`$${value.toFixed(2)}`, "Price"]}
+                formatter={(value: number | undefined) => [value != null ? `$${value.toFixed(2)}` : "—", "Price"]}
                 labelStyle={{ fontSize: 12 }}
                 contentStyle={{ fontSize: 12, borderRadius: 6 }}
               />
