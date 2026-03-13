@@ -174,9 +174,9 @@ app.post("/api/agent", async (req, res) => {
     const first = response.content[0];
     const text = first?.type === "text" ? first.text : "";
     res.json({ text });
-  } catch (err: any) {
+  } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "agent request failed", detail: err?.message ?? String(err) });
+    res.status(500).json({ error: "agent request failed" });
   }
 });
 
