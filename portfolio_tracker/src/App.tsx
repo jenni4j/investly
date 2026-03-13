@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import Portfolio from "./pages/Portfolio";
 import Charts from "./pages/Chart";
 import Watchlist from "./pages/Watchlist";
+import AgentPanel from "./components/AgentPanel";
 
 function AppContent() {
   const { user } = useAuth();
@@ -20,6 +21,7 @@ function AppContent() {
   return (
     <>
       {user && !hideNavbar && <Navbar />}
+      {user && !hideNavbar && <AgentPanel />}
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
