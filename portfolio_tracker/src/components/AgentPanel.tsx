@@ -38,10 +38,6 @@ export default function AgentPanel() {
       });
       const data = await res.json();
       setMessages([...updated, { role: "assistant", content: data.text ?? "No response." }]);
-      const writingTools = ["add_to_watchlist", "add_to_portfolio"];
-      if (data.toolsUsed?.some((t: string) => writingTools.includes(t))) {
-        window.dispatchEvent(new CustomEvent("benji:data-changed"));
-      }
     } catch {
       setMessages([...updated, { role: "assistant", content: "Something went wrong. Please try again." }]);
     } finally {

@@ -56,8 +56,13 @@ export default function Watchlist() {
 
   useEffect(() => {
     fetchWatchlist();
-    window.addEventListener("benji:data-changed", fetchWatchlist);
-    return () => window.removeEventListener("benji:data-changed", fetchWatchlist);
+
+    const channel = supabase
+      .channel("watchlist-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "watchlist" }, fetchWatchlist)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const addToWatchlist = async (stock: { symbol: string; name: string }) => {

@@ -78,8 +78,13 @@ export default function Portfolio() {
 
   useEffect(() => {
     fetchPortfolios();
-    window.addEventListener("benji:data-changed", fetchPortfolios);
-    return () => window.removeEventListener("benji:data-changed", fetchPortfolios);
+
+    const channel = supabase
+      .channel("stocks-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "stocks" }, fetchPortfolios)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const deletePortfolio = async (id: number) => {
