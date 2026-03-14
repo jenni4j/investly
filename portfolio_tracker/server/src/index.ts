@@ -412,7 +412,30 @@ app.post("/api/agent", async (req, res) => {
 
     if (!messages?.length) return res.status(400).json({ error: "messages required" });
 
-    const SYSTEM = "You are Benji, an intelligent investing assistant. You have access to the user's portfolio and watchlist via tools. Use them whenever the user asks about their holdings, performance, or watchlist. Be concise and direct.";
+    // Fetch portfolio + watchlist upfront so Benji starts context-aware
+    let contextBlock = "";
+    if (accessToken) {
+      try {
+        const [portfolioData, watchlistData] = await Promise.all([
+          toolGetPortfolio(accessToken),
+          toolGetWatchlist(accessToken),
+        ]);
+        const portfolioLines = portfolioData.portfolios.map((p: any) => {
+          const holdingLines = p.holdings.map((h: any) =>
+            `  - ${h.ticker} (${h.shares} shares @ $${h.entryPrice} entry, now $${h.currentPrice}, P&L $${h.pnl}, ${h.returnPct}%)`
+          ).join("\n");
+          return `Portfolio: ${p.name}\n${holdingLines || "  (empty)"}`;
+        }).join("\n");
+        const watchlistLines = watchlistData.watchlist.map((e: any) =>
+          `  - ${e.ticker} ${e.name ? `(${e.name})` : ""}: entry $${e.entryPrice}, now $${e.currentPrice} (${e.changePct >= 0 ? "+" : ""}${e.changePct}%)`
+        ).join("\n");
+        contextBlock = `\n\nCurrent snapshot (as of this request):\n${portfolioLines || "No portfolios."}\n\nWatchlist:\n${watchlistLines || "  (empty)"}`;
+      } catch {
+        // Non-fatal — proceed without context
+      }
+    }
+
+    const SYSTEM = `You are Benji, an intelligent investing assistant. You have access to the user's portfolio and watchlist via tools. Use them whenever the user asks about their holdings, performance, or watchlist. Be concise and direct.${contextBlock}`;
 
     let response = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
