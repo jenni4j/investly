@@ -30,6 +30,7 @@ app.get("/api/quotes", async (req, res) => {
           name: summary.price?.longName ?? ticker,
           description: summary.assetProfile?.industry ?? "",
           lastPrice: summary.price?.regularMarketPrice ?? 0,
+          regularMarketChangePercent: summary.price?.regularMarketChangePercent ?? 0,
         };
       })
     );
