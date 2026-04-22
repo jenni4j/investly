@@ -21,17 +21,20 @@ app.get("/api/quotes", async (req, res) => {
 
     const mapped = await Promise.all(
       symbols.map(async (ticker) => {
-        const summary = await yf.quoteSummary(ticker, {
-          modules: ["assetProfile", "price"],
-        });
-
-        return {
-          ticker,
-          name: summary.price?.longName ?? ticker,
-          description: summary.assetProfile?.industry ?? "",
-          lastPrice: summary.price?.regularMarketPrice ?? 0,
-          regularMarketChangePercent: summary.price?.regularMarketChangePercent ?? 0,
-        };
+        try {
+          const summary = await yf.quoteSummary(ticker, {
+            modules: ["assetProfile", "price"],
+          });
+          return {
+            ticker,
+            name: summary.price?.longName ?? ticker,
+            description: summary.assetProfile?.industry ?? "",
+            lastPrice: summary.price?.regularMarketPrice ?? 0,
+            regularMarketChangePercent: summary.price?.regularMarketChangePercent ?? 0,
+          };
+        } catch {
+          return { ticker, name: ticker, description: "", lastPrice: 0, regularMarketChangePercent: 0 };
+        }
       })
     );
 
