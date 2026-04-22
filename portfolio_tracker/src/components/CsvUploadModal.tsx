@@ -49,7 +49,7 @@ function parseCsv(text: string): { rows: CsvRow[]; error: string | null } {
 
 export default function CsvUploadModal({ portfolios, onClose, onDone }: Props) {
   const [mode, setMode] = useState<"existing" | "new">(portfolios.length > 0 ? "existing" : "new");
-  const [selectedId, setSelectedId] = useState<number>(portfolios[0]?.id ?? -1);
+  const [selectedId, setSelectedId] = useState<string>(String(portfolios[0]?.id ?? ""));
   const [newName, setNewName] = useState("");
   const [rows, setRows] = useState<CsvRow[] | null>(null);
   const [parseError, setParseError] = useState("");
@@ -79,7 +79,7 @@ export default function CsvUploadModal({ portfolios, onClose, onDone }: Props) {
     const userId = userData?.user?.id;
     if (!userId) { setUploadError("Not authenticated."); setUploading(false); return; }
 
-    let portfolioId: number;
+    let portfolioId: string;
 
     if (mode === "existing") {
       portfolioId = selectedId;
@@ -95,7 +95,7 @@ export default function CsvUploadModal({ portfolios, onClose, onDone }: Props) {
         .select("id")
         .single();
       if (createErr || !data) { setUploadError(createErr?.message ?? "Failed to create portfolio."); setUploading(false); return; }
-      portfolioId = data.id;
+      portfolioId = String(data.id);
     }
 
     const inserts = rows.map((r) => ({
@@ -114,7 +114,7 @@ export default function CsvUploadModal({ portfolios, onClose, onDone }: Props) {
     onClose();
   };
 
-  const selectedPortfolio = portfolios.find((p) => p.id === selectedId);
+  const selectedPortfolio = portfolios.find((p) => String(p.id) === selectedId);
   const canSubmit = rows !== null && rows.length > 0 && !parseError && (mode === "new" ? newName.trim().length > 0 : true);
 
   return (
@@ -148,7 +148,7 @@ export default function CsvUploadModal({ portfolios, onClose, onDone }: Props) {
             <>
               <select
                 value={selectedId}
-                onChange={(e) => setSelectedId(Number(e.target.value))}
+                onChange={(e) => setSelectedId(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
               >
                 {portfolios.map((p) => (
