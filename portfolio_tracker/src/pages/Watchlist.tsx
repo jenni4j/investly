@@ -191,7 +191,7 @@ export default function Watchlist() {
                         <td className="px-4 py-3 font-semibold whitespace-nowrap relative group/ticker">
                           {e.ticker}
                           {e.name && (
-                            <div className="absolute left-0 top-full mt-1 px-2 py-1 text-xs bg-gray-800 text-white rounded shadow-lg z-10 whitespace-nowrap hidden group-hover/ticker:block pointer-events-none">
+                            <div className="absolute left-0 bottom-full mb-1 px-2 py-1 text-xs bg-gray-800 text-white rounded shadow-lg z-10 whitespace-nowrap hidden group-hover/ticker:block pointer-events-none">
                               {e.name}
                             </div>
                           )}
