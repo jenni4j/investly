@@ -33,6 +33,7 @@ function AppContent() {
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/portfolio" element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
         <Route path="/charts" element={<ProtectedRoute><Charts /></ProtectedRoute>} />
+        <Route path="/charts/:ticker" element={<ProtectedRoute><Charts /></ProtectedRoute>} />
         <Route path="/watchlist" element={<ProtectedRoute><Watchlist /></ProtectedRoute>} />
       </Routes>
     </>

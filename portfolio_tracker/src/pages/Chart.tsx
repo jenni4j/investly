@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   LineChart,
   Line,
@@ -74,8 +75,12 @@ function fmtVol(n: number | null): string {
 }
 
 export default function Charts() {
+  const { ticker: urlTicker } = useParams<{ ticker: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [selectedTicker, setSelectedTicker] = useState<{ symbol: string; name: string } | null>(null);
-  const [period, setPeriod] = useState<Period>("1m");
+  const [period, setPeriod] = useState<Period>("1y");
   const [chartData, setChartData] = useState<DataPoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
@@ -83,6 +88,7 @@ export default function Charts() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(false);
   const [watchlistAdded, setWatchlistAdded] = useState(false);
+  const [watchlistDuplicate, setWatchlistDuplicate] = useState(false);
 
   const fetchHistory = async (ticker: string, p: Period) => {
     setLoading(true);
@@ -130,6 +136,19 @@ export default function Charts() {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData?.user) return;
 
+    const { data: existing } = await supabase
+      .from("watchlist")
+      .select("id")
+      .eq("user_id", userData.user.id)
+      .eq("ticker", selectedTicker.symbol)
+      .maybeSingle();
+
+    if (existing) {
+      setWatchlistDuplicate(true);
+      setTimeout(() => setWatchlistDuplicate(false), 2500);
+      return;
+    }
+
     const res = await fetch(`${BASE_URL}/api/quotes?tickers=${selectedTicker.symbol}`);
     const quotes = await res.json();
     const lastPrice: number = quotes[0]?.lastPrice ?? 0;
@@ -145,6 +164,15 @@ export default function Charts() {
     setWatchlistAdded(true);
     setTimeout(() => setWatchlistAdded(false), 2000);
   };
+
+  useEffect(() => {
+    if (urlTicker) {
+      const name = (location.state as { name?: string } | null)?.name ?? urlTicker;
+      setSelectedTicker({ symbol: urlTicker.toUpperCase(), name });
+    } else {
+      setSelectedTicker(null);
+    }
+  }, [urlTicker]);
 
   useEffect(() => {
     setWatchlistAdded(false);
@@ -221,11 +249,11 @@ export default function Charts() {
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="w-full sm:w-72">
           {!selectedTicker ? (
-            <StockSearch onSelect={(r) => setSelectedTicker(r)} />
+            <StockSearch onSelect={(r) => navigate(`/charts/${r.symbol}`, { state: { name: r.name } })} />
           ) : (
             <div
               className="border rounded px-3 py-2 bg-[#eef4ff] text-sm cursor-pointer"
-              onClick={() => setSelectedTicker(null)}
+              onClick={() => navigate("/charts")}
               title="Click to change stock"
             >
               {selectedTicker.symbol} — {selectedTicker.name}
@@ -237,12 +265,14 @@ export default function Charts() {
           <button
             onClick={addToWatchlist}
             className={`px-3 py-1.5 text-sm font-semibold border rounded-md transition ${
-              watchlistAdded
+              watchlistDuplicate
+                ? "bg-red-50 border-red-300 text-red-600"
+                : watchlistAdded
                 ? "bg-green-50 border-green-300 text-green-700"
                 : "bg-white border-gray-300 hover:bg-[#eef4ff] text-gray-600"
             }`}
           >
-            {watchlistAdded ? "Added!" : "+ Watchlist"}
+            {watchlistDuplicate ? "Already in watchlist" : watchlistAdded ? "Added!" : "+ Watchlist"}
           </button>
         )}
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Trash2, ChevronUp, ChevronDown, StickyNote } from "lucide-react";
 import StockSearch from "../components/StockSearch";
 import { supabase } from "../lib/supabaseClient";
@@ -17,6 +18,7 @@ interface WatchlistEntry {
 }
 
 export default function Watchlist() {
+  const navigate = useNavigate();
   const [entries, setEntries] = useState<WatchlistEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -188,7 +190,10 @@ export default function Watchlist() {
                     const hasNote = !!e.notes;
                     return [
                       <tr key={e.id} className="group/row bg-white hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 font-semibold whitespace-nowrap relative group/ticker">
+                        <td
+                          className="px-4 py-3 font-semibold whitespace-nowrap relative group/ticker cursor-pointer hover:text-blue-600 transition-colors"
+                          onClick={() => navigate(`/charts/${e.ticker}`, { state: { name: e.name ?? e.ticker } })}
+                        >
                           {e.ticker}
                           {e.name && (
                             <div className="absolute left-0 bottom-full mb-1 px-2 py-1 text-xs bg-gray-800 text-white rounded shadow-lg z-10 whitespace-nowrap hidden group-hover/ticker:block pointer-events-none">

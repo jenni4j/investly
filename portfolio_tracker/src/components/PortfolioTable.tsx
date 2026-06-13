@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Pencil, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import type { Stock } from "../types/Stock";
 import StockSearch from "./StockSearch";
@@ -16,6 +17,7 @@ interface PortfolioTableProps {
 }
 
 export default function PortfolioTable({ portfolio, refresh, onDelete }: PortfolioTableProps) {
+  const navigate = useNavigate();
   const [adding, setAdding] = useState(false);
   const [shares, setShares] = useState("");
   const [initialPrice, setInitialPrice] = useState("");
@@ -115,10 +117,13 @@ export default function PortfolioTable({ portfolio, refresh, onDelete }: Portfol
         <tbody className="divide-y divide-gray-100">
           {sortedStocks.map((s) => (
             <tr key={s.id} className="group/row bg-white hover:bg-gray-50 transition-colors">
-              <td className="px-4 py-3 font-semibold whitespace-nowrap relative group/ticker">
+              <td
+                className="px-4 py-3 font-semibold whitespace-nowrap relative group/ticker cursor-pointer hover:text-blue-600 transition-colors"
+                onClick={() => navigate(`/charts/${s.ticker}`, { state: { name: s.name ?? s.ticker } })}
+              >
                 {s.ticker}
                 {s.name && (
-                  <div className="absolute left-0 top-full mt-1 px-2 py-1 text-xs bg-gray-800 text-white rounded shadow-lg z-10 whitespace-nowrap hidden group-hover/ticker:block pointer-events-none">
+                  <div className="absolute left-0 bottom-full mb-1 px-2 py-1 text-xs bg-gray-800 text-white rounded shadow-lg z-10 whitespace-nowrap hidden group-hover/ticker:block pointer-events-none">
                     {s.name}
                   </div>
                 )}
