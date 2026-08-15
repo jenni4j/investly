@@ -57,6 +57,7 @@ export default function Portfolio() {
         ...s,
         name: y?.name ?? "",
         description: y?.description ?? "",
+        industry: y?.industry || y?.description || "Unknown",
         lastPrice: y?.lastPrice ?? 0,
         initialPrice: s.initial_price,
         currency: y?.currency ?? "USD",
