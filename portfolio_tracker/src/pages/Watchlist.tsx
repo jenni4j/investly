@@ -15,6 +15,7 @@ interface WatchlistEntry {
   notes?: string | null;
   currentPrice?: number;
   currency?: string;
+  industry?: string;
 }
 
 export default function Watchlist() {
@@ -51,10 +52,14 @@ export default function Watchlist() {
       `${BASE_URL}/api/quotes?tickers=${tickers}`
     );
     const quotes = await res.json();
-    const quoteMap: Record<string, { lastPrice: number; currency: string }> = Object.fromEntries(
-      quotes.map((q: { ticker: string; lastPrice: number; currency: string }) => [
+    const quoteMap: Record<string, { lastPrice: number; currency: string; industry: string }> = Object.fromEntries(
+      quotes.map((q: { ticker: string; lastPrice: number; currency: string; industry?: string; description?: string }) => [
         q.ticker,
-        { lastPrice: q.lastPrice, currency: q.currency ?? "USD" },
+        {
+          lastPrice: q.lastPrice,
+          currency: q.currency ?? "USD",
+          industry: q.industry || q.description || "Unknown",
+        },
       ])
     );
 
@@ -63,6 +68,7 @@ export default function Watchlist() {
         ...e,
         currentPrice: quoteMap[e.ticker]?.lastPrice ?? undefined,
         currency: quoteMap[e.ticker]?.currency ?? "USD",
+        industry: quoteMap[e.ticker]?.industry ?? "Unknown",
       }))
     );
     setLoading(false);
@@ -159,6 +165,7 @@ export default function Watchlist() {
               <thead className="bg-[#e9ecf1] text-xs uppercase tracking-wider font-bold border-b border-gray-200">
                 <tr>
                   <th className="px-4 py-3 text-left">Ticker</th>
+                  <th className="px-4 py-3 text-left whitespace-nowrap">Industry</th>
                   <th className="px-4 py-3 text-right whitespace-nowrap">Entry Price</th>
                   <th className="px-4 py-3 text-right whitespace-nowrap">Current Price</th>
                   <th className="px-4 py-3 text-right whitespace-nowrap cursor-pointer" onClick={() => setSortDesc((d) => !d)}>
@@ -201,6 +208,9 @@ export default function Watchlist() {
                             </div>
                           )}
                         </td>
+                        <td className="px-4 py-3 text-left text-xs text-gray-500 whitespace-nowrap">
+                          {e.industry ?? "Unknown"}
+                        </td>
                         <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap text-gray-500">
                           ${e.price_at_entry.toFixed(2)}
                         </td>
@@ -241,7 +251,7 @@ export default function Watchlist() {
                       </tr>,
                       isEditing && (
                         <tr key={`note-${e.id}`} className="bg-blue-50 border-t-0">
-                          <td colSpan={7} className="px-4 pb-3 pt-2">
+                          <td colSpan={8} className="px-4 pb-3 pt-2">
                             <textarea
                               ref={textareaRef}
                               value={draftNote}
