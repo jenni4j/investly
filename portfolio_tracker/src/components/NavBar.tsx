@@ -11,6 +11,7 @@ export default function Navbar() {
   const tabs = [
     { label: "Home", path: "/" },
     { label: "Portfolios", path: "/portfolio" },
+    { label: "Industry", path: "/industry" },
     { label: "Charts", path: "/charts" },
     { label: "Watchlist", path: "/watchlist" },
   ];

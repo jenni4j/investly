@@ -35,12 +35,13 @@ app.get("/api/quotes", async (req, res) => {
             ticker,
             name: summary.price?.longName ?? ticker,
             description: summary.assetProfile?.industry ?? "",
+            industry: summary.assetProfile?.industry ?? "Unknown",
             lastPrice: summary.price?.regularMarketPrice ?? 0,
             regularMarketChangePercent: summary.price?.regularMarketChangePercent ?? 0,
             currency: summary.price?.currency ?? "USD",
           };
         } catch {
-          return { ticker, name: ticker, description: "", lastPrice: 0, regularMarketChangePercent: 0, currency: "USD" };
+          return { ticker, name: ticker, description: "", industry: "Unknown", lastPrice: 0, regularMarketChangePercent: 0, currency: "USD" };
         }
       })
     );

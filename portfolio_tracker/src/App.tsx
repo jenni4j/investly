@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import Portfolio from "./pages/Portfolio";
 import Charts from "./pages/Chart";
 import Watchlist from "./pages/Watchlist";
+import Industry from "./pages/Industry";
 import AgentPanel from "./components/AgentPanel";
 
 function AppContent() {
@@ -35,6 +36,7 @@ function AppContent() {
         <Route path="/charts" element={<ProtectedRoute><Charts /></ProtectedRoute>} />
         <Route path="/charts/:ticker" element={<ProtectedRoute><Charts /></ProtectedRoute>} />
         <Route path="/watchlist" element={<ProtectedRoute><Watchlist /></ProtectedRoute>} />
+        <Route path="/industry" element={<ProtectedRoute><Industry /></ProtectedRoute>} />
       </Routes>
     </>
   );
