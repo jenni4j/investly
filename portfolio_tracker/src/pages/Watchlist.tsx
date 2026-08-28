@@ -152,7 +152,7 @@ export default function Watchlist() {
       {loading && <p className="text-gray-500">Loading watchlist...</p>}
 
       {!loading && (
-        <div className="rounded-xl border border-gray-200 shadow-sm">
+        <div className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           {entries.length === 0 && !adding && (
             <p className="text-gray-500 py-10 text-center text-sm">
               Your watchlist is empty. Add a stock to get started.
@@ -176,7 +176,10 @@ export default function Watchlist() {
                   </th>
                   <th className="px-4 py-3 text-right whitespace-nowrap">Date Added</th>
                   <th className="px-4 py-3 text-left">Currency</th>
-                  <th className="px-4 py-3 w-[80px]"></th>
+                  <th
+                    className="sticky right-0 z-[1] w-[88px] min-w-[88px] bg-[#e9ecf1] px-4 py-3"
+                    aria-label="Actions"
+                  ></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -226,14 +229,15 @@ export default function Watchlist() {
                           {e.date_added}
                         </td>
                         <td className="px-4 py-3 text-xs text-gray-400 font-semibold">{e.currency ?? "USD"}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex justify-center items-center gap-2 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                        <td className="sticky right-0 z-[1] w-[88px] min-w-[88px] bg-white px-4 py-3 group-hover/row:bg-gray-50 transition-colors">
+                          <div className="flex shrink-0 justify-center items-center gap-2 opacity-0 group-hover/row:opacity-100 focus-within:opacity-100 transition-opacity">
                             <button
                               onClick={() => openNote(e)}
-                              className={`cursor-pointer transition hover:scale-110 relative ${
+                              className={`flex h-6 w-6 shrink-0 items-center justify-center cursor-pointer transition hover:scale-110 relative ${
                                 isEditing ? "text-blue-500" : hasNote ? "text-blue-400" : "text-gray-400 hover:text-blue-400"
                               }`}
                               title={hasNote ? "Edit note" : "Add note"}
+                              aria-label={`${hasNote ? "Edit" : "Add"} note for ${e.ticker}`}
                             >
                               <StickyNote className="w-4 h-4" />
                               {hasNote && !isEditing && (
@@ -242,7 +246,9 @@ export default function Watchlist() {
                             </button>
                             <button
                               onClick={() => deleteEntry(e.id)}
-                              className="cursor-pointer text-gray-400 hover:text-red-500 hover:scale-110 transition"
+                              className="flex h-6 w-6 shrink-0 items-center justify-center cursor-pointer text-gray-400 hover:text-red-500 hover:scale-110 transition"
+                              title="Remove from watchlist"
+                              aria-label={`Remove ${e.ticker} from watchlist`}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
