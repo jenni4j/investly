@@ -103,10 +103,10 @@ export default function PortfolioTable({ portfolio, refresh, onDelete }: Portfol
   const fmt = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
-    <div className="w-full mx-auto mt-8 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className="w-full mx-auto mt-8 rounded-xl border border-gray-200 shadow-sm">
 
       {/* Card header */}
-      <div className="flex items-center justify-between px-5 py-4 bg-gray-50 border-b border-gray-200">
+      <div className="flex items-center justify-between rounded-t-xl px-5 py-4 bg-gray-50 border-b border-gray-200">
         {editingName ? (
           <div className="flex min-w-0 items-center gap-2">
             <input
@@ -247,7 +247,7 @@ export default function PortfolioTable({ portfolio, refresh, onDelete }: Portfol
       </div>
 
       {/* Card footer — add entry */}
-      <div className="border-t border-gray-200 px-4 py-3 bg-gray-50 flex flex-col items-center gap-3">
+      <div className="relative z-10 rounded-b-xl border-t border-gray-200 px-4 py-3 bg-gray-50 flex flex-col items-center gap-3">
         {!adding && (
           <button
             onClick={() => setAdding(true)}
