@@ -117,7 +117,7 @@ export default function Portfolio() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto mt-10 pb-16 px-4">
+    <div className="w-full max-w-7xl mx-auto mt-10 pb-16 px-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">My Portfolios</h1>
         <button

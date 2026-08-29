@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Pencil, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { Check, Pencil, Trash2, ChevronUp, ChevronDown, X } from "lucide-react";
 import type { Stock } from "../types/Stock";
 import StockSearch from "./StockSearch";
 import { supabase } from "../lib/supabaseClient";
@@ -22,6 +22,9 @@ export default function PortfolioTable({ portfolio, refresh, onDelete }: Portfol
   const [shares, setShares] = useState("");
   const [initialPrice, setInitialPrice] = useState("");
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [portfolioName, setPortfolioName] = useState(portfolio.name);
+  const [savingName, setSavingName] = useState(false);
   const [selectedStock, setSelectedStock] = useState<{ symbol: string; name: string } | null>(null);
 
   const stocks = portfolio.stocks || [];
@@ -40,6 +43,36 @@ export default function PortfolioTable({ portfolio, refresh, onDelete }: Portfol
   const deleteStock = async (id: number) => {
     if (!confirm("Delete this stock?")) return;
     await supabase.from("stocks").delete().eq("id", id);
+    refresh();
+  };
+
+  const cancelNameEdit = () => {
+    setPortfolioName(portfolio.name);
+    setEditingName(false);
+  };
+
+  const savePortfolioName = async () => {
+    const name = portfolioName.trim();
+    if (!name || name === portfolio.name) {
+      cancelNameEdit();
+      return;
+    }
+
+    setSavingName(true);
+    const { error } = await supabase
+      .from("portfolios")
+      .update({ name })
+      .eq("id", portfolio.id);
+    setSavingName(false);
+
+    if (error) {
+      console.error(error);
+      alert("Could not rename the portfolio. Please try again.");
+      return;
+    }
+
+    setPortfolioName(name);
+    setEditingName(false);
     refresh();
   };
 
@@ -70,11 +103,59 @@ export default function PortfolioTable({ portfolio, refresh, onDelete }: Portfol
   const fmt = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
-    <div className="w-full max-w-5xl mx-auto mt-8 rounded-xl border border-gray-200 shadow-sm">
+    <div className="w-full mx-auto mt-8 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
 
       {/* Card header */}
       <div className="flex items-center justify-between px-5 py-4 bg-gray-50 border-b border-gray-200">
-        <h2 className="text-base font-bold tracking-wide text-gray-800">{portfolio.name}</h2>
+        {editingName ? (
+          <div className="flex min-w-0 items-center gap-2">
+            <input
+              autoFocus
+              value={portfolioName}
+              onChange={(event) => setPortfolioName(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") savePortfolioName();
+                if (event.key === "Escape") cancelNameEdit();
+              }}
+              disabled={savingName}
+              className="min-w-0 w-64 max-w-full rounded-md border border-blue-300 bg-white px-2.5 py-1 text-base font-bold tracking-wide text-gray-800 outline-none focus:ring-2 focus:ring-blue-200"
+              aria-label="Portfolio name"
+            />
+            <button
+              onClick={savePortfolioName}
+              disabled={savingName || !portfolioName.trim()}
+              className="text-green-600 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-40"
+              title="Save portfolio name"
+              aria-label="Save portfolio name"
+            >
+              <Check className="h-4 w-4" />
+            </button>
+            <button
+              onClick={cancelNameEdit}
+              disabled={savingName}
+              className="text-gray-400 hover:text-gray-600 disabled:opacity-40"
+              title="Cancel renaming"
+              aria-label="Cancel renaming"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="group/name flex min-w-0 items-center gap-2">
+            <h2 className="truncate text-base font-bold tracking-wide text-gray-800">{portfolio.name}</h2>
+            <button
+              onClick={() => {
+                setPortfolioName(portfolio.name);
+                setEditingName(true);
+              }}
+              className="text-gray-400 opacity-60 transition hover:text-blue-500 sm:opacity-0 sm:group-hover/name:opacity-100 focus:opacity-100"
+              title="Rename portfolio"
+              aria-label={`Rename ${portfolio.name}`}
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+          </div>
+        )}
         <button
           onClick={onDelete}
           className="text-gray-400 hover:text-red-500 hover:scale-110 transition cursor-pointer"
@@ -85,7 +166,7 @@ export default function PortfolioTable({ portfolio, refresh, onDelete }: Portfol
       </div>
 
       <div className="overflow-x-auto">
-      <table className="w-full table-auto text-sm">
+      <table className="w-full min-w-[1100px] table-auto text-sm">
         <thead className="bg-[#e9ecf1] text-xs uppercase tracking-wider font-bold border-b border-gray-200">
           <tr>
             <th className="px-4 py-3 text-left">Ticker</th>
