@@ -5,6 +5,7 @@ import type { Stock } from "../types/Stock";
 import StockSearch from "./StockSearch";
 import { supabase } from "../lib/supabaseClient";
 import EditStockModal from "./EditStockModal";
+import MomentumBadge from "./MomentumBadge";
 
 interface PortfolioTableProps {
   portfolio: {
@@ -191,6 +192,7 @@ export default function PortfolioTable({ portfolio, refresh, onDelete }: Portfol
                   : <ChevronDown className="w-4 h-4 opacity-25" />}
               </div>
             </th>
+            <th className="px-4 py-3 text-left whitespace-nowrap">Momentum</th>
             <th className="px-4 py-3 text-left">Currency</th>
             <th className="px-4 py-3 w-[56px]"></th>
           </tr>
@@ -226,6 +228,10 @@ export default function PortfolioTable({ portfolio, refresh, onDelete }: Portfol
 
               <td className={`px-4 py-3 text-right tabular-nums whitespace-nowrap ${s.returnPct >= 0 ? "text-green-600" : "text-red-600"}`}>
                 {s.returnPct >= 0 ? "+" : ""}{s.returnPct.toFixed(2)}%
+              </td>
+
+              <td className="px-4 py-3">
+                <MomentumBadge momentum={s.momentum} />
               </td>
 
               <td className="px-4 py-3 text-xs text-gray-400 font-semibold">{s.currency ?? "USD"}</td>

@@ -18,6 +18,55 @@ function makeSupabaseClient(accessToken: string) {
 app.use(cors());
 app.use(express.json());
 
+type MomentumStatus = "positive" | "neutral" | "negative";
+
+interface MomentumResult {
+  status: MomentumStatus;
+  score: number;
+  fiveDayReturn: number;
+  priceVsEma10: number;
+  ema5VsEma10: number;
+  explanation: string;
+}
+
+function ema(values: number[], period: number): number {
+  const multiplier = 2 / (period + 1);
+  return values.slice(1).reduce(
+    (current, value) => value * multiplier + current * (1 - multiplier),
+    values[0]!
+  );
+}
+
+function calculateMomentum(closes: number[]): MomentumResult | null {
+  if (closes.length < 10) return null;
+
+  const recent = closes.slice(-10);
+  const latest = recent[recent.length - 1]!;
+  const fiveDayReturn = ((latest / recent[recent.length - 6]!) - 1) * 100;
+  const ema5 = ema(recent.slice(-5), 5);
+  const ema10 = ema(recent, 10);
+  const priceVsEma10 = ((latest / ema10) - 1) * 100;
+  const ema5VsEma10 = ((ema5 / ema10) - 1) * 100;
+
+  const signals = [
+    fiveDayReturn > 2 ? 1 : fiveDayReturn < -2 ? -1 : 0,
+    latest > ema10 ? 1 : -1,
+    ema5 > ema10 ? 1 : -1,
+  ];
+  const score = signals.reduce((total, signal) => total + signal, 0);
+  const status: MomentumStatus = score >= 2 ? "positive" : score <= -2 ? "negative" : "neutral";
+  const direction = (value: number) => value >= 0 ? `+${value.toFixed(1)}%` : `${value.toFixed(1)}%`;
+
+  return {
+    status,
+    score,
+    fiveDayReturn,
+    priceVsEma10,
+    ema5VsEma10,
+    explanation: `5-day return ${direction(fiveDayReturn)}; price ${direction(priceVsEma10)} vs 10-day EMA; 5-day EMA ${direction(ema5VsEma10)} vs 10-day EMA.`,
+  };
+}
+
 app.get("/api/quotes", async (req, res) => {
   try {
     const tickers = req.query.tickers?.toString();
@@ -28,9 +77,15 @@ app.get("/api/quotes", async (req, res) => {
     const mapped = await Promise.all(
       symbols.map(async (ticker) => {
         try {
-          const summary = await yf.quoteSummary(ticker, {
-            modules: ["assetProfile", "price"],
-          });
+          const period1 = new Date();
+          period1.setDate(period1.getDate() - 35);
+          const [summary, chart] = await Promise.all([
+            yf.quoteSummary(ticker, { modules: ["assetProfile", "price"] }),
+            yf.chart(ticker, { interval: "1d", period1, period2: new Date() }).catch(() => null),
+          ]);
+          const closes = chart?.quotes
+            .filter((quote) => quote.close != null)
+            .map((quote) => quote.close as number) ?? [];
           return {
             ticker,
             name: summary.price?.longName ?? ticker,
@@ -39,9 +94,10 @@ app.get("/api/quotes", async (req, res) => {
             lastPrice: summary.price?.regularMarketPrice ?? 0,
             regularMarketChangePercent: summary.price?.regularMarketChangePercent ?? 0,
             currency: summary.price?.currency ?? "USD",
+            momentum: calculateMomentum(closes),
           };
         } catch {
-          return { ticker, name: ticker, description: "", industry: "Unknown", lastPrice: 0, regularMarketChangePercent: 0, currency: "USD" };
+          return { ticker, name: ticker, description: "", industry: "Unknown", lastPrice: 0, regularMarketChangePercent: 0, currency: "USD", momentum: null };
         }
       })
     );

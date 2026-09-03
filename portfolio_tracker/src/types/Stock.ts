@@ -1,3 +1,5 @@
+import type { Momentum } from "./Momentum";
+
 export interface Stock {
     id: number;
     ticker: string;
@@ -11,4 +13,5 @@ export interface Stock {
     returnPct: number;
     pnl: number;
     currency?: string;
+    momentum?: Momentum | null;
   }

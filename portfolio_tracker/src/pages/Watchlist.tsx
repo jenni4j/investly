@@ -5,6 +5,8 @@ import StockSearch from "../components/StockSearch";
 import { supabase } from "../lib/supabaseClient";
 import { BASE_URL } from "../lib/api";
 import { todayString } from "../lib/utils";
+import MomentumBadge from "../components/MomentumBadge";
+import type { Momentum } from "../types/Momentum";
 
 interface WatchlistEntry {
   id: number;
@@ -16,6 +18,7 @@ interface WatchlistEntry {
   currentPrice?: number;
   currency?: string;
   industry?: string;
+  momentum?: Momentum | null;
 }
 
 export default function Watchlist() {
@@ -52,13 +55,14 @@ export default function Watchlist() {
       `${BASE_URL}/api/quotes?tickers=${tickers}`
     );
     const quotes = await res.json();
-    const quoteMap: Record<string, { lastPrice: number; currency: string; industry: string }> = Object.fromEntries(
-      quotes.map((q: { ticker: string; lastPrice: number; currency: string; industry?: string; description?: string }) => [
+    const quoteMap: Record<string, { lastPrice: number; currency: string; industry: string; momentum: Momentum | null }> = Object.fromEntries(
+      quotes.map((q: { ticker: string; lastPrice: number; currency: string; industry?: string; description?: string; momentum?: Momentum | null }) => [
         q.ticker,
         {
           lastPrice: q.lastPrice,
           currency: q.currency ?? "USD",
           industry: q.industry || q.description || "Unknown",
+          momentum: q.momentum ?? null,
         },
       ])
     );
@@ -69,6 +73,7 @@ export default function Watchlist() {
         currentPrice: quoteMap[e.ticker]?.lastPrice ?? undefined,
         currency: quoteMap[e.ticker]?.currency ?? "USD",
         industry: quoteMap[e.ticker]?.industry ?? "Unknown",
+        momentum: quoteMap[e.ticker]?.momentum ?? null,
       }))
     );
     setLoading(false);
@@ -175,6 +180,7 @@ export default function Watchlist() {
                     </div>
                   </th>
                   <th className="px-4 py-3 text-right whitespace-nowrap">Date Added</th>
+                  <th className="px-4 py-3 text-left whitespace-nowrap">Momentum</th>
                   <th className="px-4 py-3 text-left">Currency</th>
                   <th
                     className="sticky right-0 z-[1] w-[88px] min-w-[88px] bg-[#e9ecf1] px-4 py-3"
@@ -228,6 +234,9 @@ export default function Watchlist() {
                         <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap text-gray-500">
                           {e.date_added}
                         </td>
+                        <td className="px-4 py-3">
+                          <MomentumBadge momentum={e.momentum} />
+                        </td>
                         <td className="px-4 py-3 text-xs text-gray-400 font-semibold">{e.currency ?? "USD"}</td>
                         <td className="sticky right-0 z-[1] w-[88px] min-w-[88px] bg-white px-4 py-3 group-hover/row:bg-gray-50 transition-colors">
                           <div className="flex shrink-0 justify-center items-center gap-2 opacity-0 group-hover/row:opacity-100 focus-within:opacity-100 transition-opacity">
@@ -257,7 +266,7 @@ export default function Watchlist() {
                       </tr>,
                       isEditing && (
                         <tr key={`note-${e.id}`} className="bg-blue-50 border-t-0">
-                          <td colSpan={8} className="px-4 pb-3 pt-2">
+                          <td colSpan={9} className="px-4 pb-3 pt-2">
                             <textarea
                               ref={textareaRef}
                               value={draftNote}
