@@ -149,7 +149,7 @@ export default function Watchlist() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto mt-10 pb-16 px-4">
+    <div className="w-full max-w-7xl mx-auto mt-10 pb-16 px-4">
       <div className="flex items-center mb-6">
         <h1 className="text-3xl font-bold">My Watchlist</h1>
       </div>
