@@ -157,7 +157,7 @@ export default function Watchlist() {
       {loading && <p className="text-gray-500">Loading watchlist...</p>}
 
       {!loading && (
-        <div className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-gray-200 shadow-sm">
           {entries.length === 0 && !adding && (
             <p className="text-gray-500 py-10 text-center text-sm">
               Your watchlist is empty. Add a stock to get started.
@@ -165,7 +165,7 @@ export default function Watchlist() {
           )}
 
           {entries.length > 0 && (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-t-xl">
             <table className="w-full table-auto text-sm">
               <thead className="bg-[#e9ecf1] text-xs uppercase tracking-wider font-bold border-b border-gray-200">
                 <tr>
@@ -304,7 +304,7 @@ export default function Watchlist() {
           )}
 
           {/* Card footer — add entry */}
-          <div className="border-t border-gray-200 px-4 py-3 bg-gray-50 flex flex-col items-center gap-3">
+          <div className="relative z-10 rounded-b-xl border-t border-gray-200 px-4 py-3 bg-gray-50 flex flex-col items-center gap-3">
             {!adding && (
               <button
                 onClick={() => setAdding(true)}
